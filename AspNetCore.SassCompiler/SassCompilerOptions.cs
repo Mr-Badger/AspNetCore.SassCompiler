@@ -23,5 +23,9 @@ namespace AspNetCore.SassCompiler
         public bool GenerateScopedCss { get; set; } = true;
 
         public string[] ScopedCssFolders { get; set; } = new[] { "Views", "Pages", "Shared", "Components" };
+
+        public bool FindInAllProjects { get; set; } = true;
+
+        public int SolutionRootFolderLevel { get; set; } = 1;
     }
 }

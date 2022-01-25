@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -117,15 +117,41 @@ namespace AspNetCore.SassCompiler
 
             var directories = new List<string>();
             directories.Add($"\"{Path.Join(rootFolder, _options.SourceFolder)}\":\"{Path.Join(rootFolder, _options.TargetFolder)}\"");
+
             if (_options.GenerateScopedCss)
             {
-                foreach (var dir in _options.ScopedCssFolders)
+                if (_options.FindInAllProjects)
                 {
-                    if (dir == _options.SourceFolder)
-                        continue;
+                    var rootDir = new DirectoryInfo(Directory.GetCurrentDirectory());
+                    for (int i = 0; i < _options.SolutionRootFolderLevel; i++)
+                    {
+                        rootDir = rootDir.Parent;
+                    }
 
-                    if (Directory.Exists(Path.Join(rootFolder, dir)))
-                        directories.Add($"\"{Path.Join(rootFolder, dir)}\":\"{Path.Join(rootFolder, dir)}\"");
+                    foreach (var file in Directory.GetFiles(rootDir.FullName, "*.csproj", SearchOption.AllDirectories))
+                    {
+                        var projectFolder = Directory.GetParent(file).FullName;
+
+                        foreach (var dir in _options.ScopedCssFolders)
+                        {
+                            if (dir == _options.SourceFolder)
+                                continue;
+
+                            if (Directory.Exists(Path.Join(projectFolder, dir)))
+                                directories.Add($"\"{Path.Join(projectFolder, dir)}\":\"{Path.Join(projectFolder, dir)}\"");
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var dir in _options.ScopedCssFolders)
+                    {
+                        if (dir == _options.SourceFolder)
+                            continue;
+
+                        if (Directory.Exists(Path.Join(rootFolder, dir)))
+                            directories.Add($"\"{Path.Join(rootFolder, dir)}\":\"{Path.Join(rootFolder, dir)}\"");
+                    }
                 }
             }
 
