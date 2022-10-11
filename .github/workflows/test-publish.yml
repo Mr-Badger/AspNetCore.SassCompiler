@@ -1,0 +1,24 @@
+name: .NET Core Test Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: Build
+      run: dotnet build -c Release /p:Version=0.0.2-test
+    - name: Pack
+      run: dotnet pack -c Release /p:Version=0.0.2-test --no-build --output .
+    - name: Push
+      run: dotnet nuget push AspNetCore.Sass2Compiler.0.0.2-test.nupkg --source https://nuget.pkg.github.com/Mr-Badger/index.json --api-key ${GITHUB_TOKEN}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
